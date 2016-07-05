@@ -37,6 +37,8 @@ public class RoomSelect extends AppCompatActivity {
     private String name;
     private DatabaseReference root = FirebaseDatabase.getInstance().getReference();
     private DatabaseReference roomNames = root.child("RoomNames");
+    private DatabaseReference usersTemp = root.child("Users");
+    private String temp_key;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,10 +58,10 @@ public class RoomSelect extends AppCompatActivity {
         add_room.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                temp_key = roomNames.push().getKey();
                 Map<String,Object> map = new HashMap<>();
-                map.put(room_name.getText().toString(),"");
-                roomNames.updateChildren(map);
+                map.put("room_name",room_name.getText().toString());
+                roomNames.child("Room"+temp_key).updateChildren(map);
 
             }
         });
@@ -70,9 +72,8 @@ public class RoomSelect extends AppCompatActivity {
 
                 Set<String> set = new HashSet<>();
                 Iterator i = dataSnapshot.getChildren().iterator();
-
                 while (i.hasNext()){
-                    set.add(((DataSnapshot)i.next()).getKey());
+                    set.add(((DataSnapshot)i.next()).child("room_name").getValue().toString());
                 }
 
                 list_of_rooms.clear();
@@ -111,6 +112,11 @@ public class RoomSelect extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 name = input_field.getText().toString();
+                temp_key = usersTemp.push().getKey();
+                Map<String,Object> map = new HashMap<>();
+                map.put("user_name",name);
+                usersTemp.child("User"+temp_key).updateChildren(map);
+
             }
         });
 
