@@ -40,7 +40,7 @@ public class PlayScreen extends AppCompatActivity {
         room_name = getIntent().getExtras().get("room_name").toString();
         setTitle(" Room - "+room_name);
 
-        root = FirebaseDatabase.getInstance().getReference().child("Answers");
+        root = FirebaseDatabase.getInstance().getReference().child("message");
 
         btn_send_msg.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -50,10 +50,10 @@ public class PlayScreen extends AppCompatActivity {
                 temp_key = root.push().getKey();
                 root.updateChildren(map);
 
-                DatabaseReference message_root = root.child("Answ"+temp_key);
+                DatabaseReference message_root = root.child("Msg"+temp_key);
                 Map<String,Object> map2 = new HashMap<String, Object>();
                 map2.put("user_name",user_name);
-                map2.put("answer",input_msg.getText().toString());
+                map2.put("text",input_msg.getText().toString());
                 map2.put("room_name",room_name);
 
                 message_root.updateChildren(map2);
