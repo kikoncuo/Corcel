@@ -45,6 +45,7 @@ public class RoomSelect extends AppCompatActivity {
     private DatabaseReference roomNames = root.child("RoomNames");
     private DatabaseReference usersTemp = root.child("Users");
     private String temp_key;
+    private String room_pass;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +69,7 @@ public class RoomSelect extends AppCompatActivity {
                 Map<String,Object> map = new HashMap<>();
                 map.put("room_name",room_name.getText().toString());
                 roomNames.child("Room"+temp_key).updateChildren(map);
-
+                room_name.setText("");
             }
         });
 
@@ -97,11 +98,7 @@ public class RoomSelect extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
-                Intent intent = new Intent(getApplicationContext(),PlayScreen.class);
-                intent.putExtra("room_name",((TextView)view).getText().toString() );
-                intent.putExtra("user_name",name);
-                startActivity(intent);
+                request_password_room(((TextView)view).getText().toString());
             }
         });
 
@@ -137,29 +134,32 @@ public class RoomSelect extends AppCompatActivity {
         builder.show();
     }
 
-   /* byte[] keyStart = "this is a key".getBytes();
-    KeyGenerator kgen = KeyGenerator.getInstance("AES");
-    SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
-    sr.setSeed(keyStart);
-    kgen.init(128, sr); // 192 and 256 bits may not be available
-    SecretKey skey = kgen.generateKey();
-    byte[] key = skey.getEncoded();*/
+    private void request_password_room(final String roomName) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Enter the password for the room:");
 
-    private static byte[] encrypt(byte[] raw, byte[] clear) throws Exception {
-        SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
-        Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
-        byte[] encrypted = cipher.doFinal(clear);
-        return encrypted;
+        final EditText input_field = new EditText(this);
+
+        builder.setView(input_field);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                room_pass = input_field.getText().toString();
+                Intent intent = new Intent(getApplicationContext(),PlayScreen.class);
+                intent.putExtra("room_name",roomName );
+                intent.putExtra("user_name",name);
+                intent.putExtra("room_pass",room_pass);
+                startActivity(intent);
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+
+        builder.show();
     }
-
-    private static byte[] decrypt(byte[] raw, byte[] encrypted) throws Exception {
-        SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
-        Cipher cipher = Cipher.getInstance("AES");
-        cipher.init(Cipher.DECRYPT_MODE, skeySpec);
-        byte[] decrypted = cipher.doFinal(encrypted);
-        return decrypted;
-    }
-
-
 }

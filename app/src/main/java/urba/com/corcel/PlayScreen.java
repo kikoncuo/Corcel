@@ -18,12 +18,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+
 public class PlayScreen extends AppCompatActivity {
     private Button btn_send_msg;
     private EditText input_msg;
     private TextView chat_conversation;
 
-    private String user_name,room_name;
+    private String user_name,room_name,room_pass;
     private DatabaseReference root =  FirebaseDatabase.getInstance().getReference();
     private String temp_key;
 
@@ -38,6 +41,7 @@ public class PlayScreen extends AppCompatActivity {
 
         user_name = getIntent().getExtras().get("user_name").toString();
         room_name = getIntent().getExtras().get("room_name").toString();
+        room_pass = getIntent().getExtras().get("room_pass").toString();
         setTitle(" Room - "+room_name);
 
         root = FirebaseDatabase.getInstance().getReference().child("message");
@@ -51,12 +55,25 @@ public class PlayScreen extends AppCompatActivity {
                 root.updateChildren(map);
 
                 DatabaseReference message_root = root.child("Msg"+temp_key);
-                Map<String,Object> map2 = new HashMap<String, Object>();
+                Map<String,Object> map2 = new HashMap<>();
                 map2.put("user_name",user_name);
-                map2.put("text",input_msg.getText().toString());
+                //Encrypt the txt
+                String encrypted_txt="";
+                try{
+                    AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "S4ltyS4ltRand0mWriT1ngoNtheWall".getBytes());
+                    AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = AesCbcWithIntegrity.encrypt(input_msg.getText().toString(), keys);
+                    encrypted_txt = (cipherTextIvMac.toString());
+                }catch(Exception exe){
+                    //TODO:Handle this at least in console
+                }
+                //Save encrypted text
+                map2.put("text",encrypted_txt);
+                //TODO: store the ID of the room instead of the name
                 map2.put("room_name",room_name);
 
                 message_root.updateChildren(map2);
+
+                input_msg.setText("");
             }
         });
 
@@ -92,21 +109,29 @@ public class PlayScreen extends AppCompatActivity {
 
     }
 
-    private String chat_msg,chat_user_name,chat_room;
+    private String chat_msg,chat_user_name,chat_room,clear_msg;
 
     private void append_chat_conversation(DataSnapshot dataSnapshot) {
 
-        Iterator i = dataSnapshot.getChildren().iterator();
-
-        while (i.hasNext()){
-
-            chat_msg = (String) ((DataSnapshot)i.next()).getValue();
-            chat_room = (String) ((DataSnapshot)i.next()).getValue();
-            chat_user_name = (String) ((DataSnapshot)i.next()).getValue();
-            if (chat_room.equals(room_name))
-                chat_conversation.append(chat_user_name +" : "+chat_msg +" \n");
+        //TODO: Ineficiente de cojones leer todos los msj, deberian estar anidados a su sala?
+            String test = dataSnapshot.getKey();
+            chat_room = dataSnapshot.child("room_name").getValue().toString();
+            chat_msg = dataSnapshot.child("text").getValue().toString();
+        //Try to decipher
+        try{
+            AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "S4ltyS4ltRand0mWriT1ngoNtheWall".getBytes());
+            AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = new AesCbcWithIntegrity.CipherTextIvMac(chat_msg);
+            clear_msg = AesCbcWithIntegrity.decryptString(cipherTextIvMac, keys);
+        }catch(Exception exe){
+            //TODO:Handle this at least in console
         }
+            chat_user_name = dataSnapshot.child("user_name").getValue().toString();
+
+            if (chat_room.equals(room_name))
+                chat_conversation.append(chat_user_name +" : "+clear_msg +" \n");
+       // }
 
 
     }
+
 }
