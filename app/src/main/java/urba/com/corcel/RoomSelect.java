@@ -35,7 +35,8 @@ public class RoomSelect extends AppCompatActivity {
     private ArrayAdapter<String> arrayAdapter;
     private ArrayList<String> list_of_rooms = new ArrayList<>();
     private String name;
-    private DatabaseReference root = FirebaseDatabase.getInstance().getReference().getRoot();
+    private DatabaseReference root = FirebaseDatabase.getInstance().getReference();
+    private DatabaseReference roomNames = root.child("RoomNames");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +47,7 @@ public class RoomSelect extends AppCompatActivity {
         room_name = (EditText) findViewById(R.id.room_name_edittext);
         listView = (ListView) findViewById(R.id.listView);
 
-        arrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,list_of_rooms);
+        arrayAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,list_of_rooms);
 
         listView.setAdapter(arrayAdapter);
 
@@ -56,18 +57,18 @@ public class RoomSelect extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                Map<String,Object> map = new HashMap<String, Object>();
+                Map<String,Object> map = new HashMap<>();
                 map.put(room_name.getText().toString(),"");
-                root.updateChildren(map);
+                roomNames.updateChildren(map);
 
             }
         });
 
-        root.addValueEventListener(new ValueEventListener() {
+        roomNames.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                Set<String> set = new HashSet<String>();
+                Set<String> set = new HashSet<>();
                 Iterator i = dataSnapshot.getChildren().iterator();
 
                 while (i.hasNext()){
