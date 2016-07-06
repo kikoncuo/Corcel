@@ -39,4 +39,5 @@
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:id="@+id/textView" />
     </ScrollView>
+
 </RelativeLayout>

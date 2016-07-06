@@ -1,4 +1,4 @@
-package urba.com.corcel;
+package urba.com.corcel.Views;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -15,11 +15,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
+import urba.com.corcel.Libraries.AesCbcWithIntegrity;
+import urba.com.corcel.R;
+
 
 public class PlayScreen extends AppCompatActivity {
     private Button btn_send_msg;
@@ -114,24 +114,23 @@ public class PlayScreen extends AppCompatActivity {
     private void append_chat_conversation(DataSnapshot dataSnapshot) {
 
         //TODO: Ineficiente de cojones leer todos los msj, deberian estar anidados a su sala?
-            String test = dataSnapshot.getKey();
-            chat_room = dataSnapshot.child("room_name").getValue().toString();
-            chat_msg = dataSnapshot.child("text").getValue().toString();
+        String test = dataSnapshot.getKey();
+        chat_room = dataSnapshot.child("room_name").getValue().toString();
+        chat_msg = dataSnapshot.child("text").getValue().toString();
         //Try to decipher
-        try{
+        try {
             AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "S4ltyS4ltRand0mWriT1ngoNtheWall".getBytes());
             AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = new AesCbcWithIntegrity.CipherTextIvMac(chat_msg);
             clear_msg = AesCbcWithIntegrity.decryptString(cipherTextIvMac, keys);
-        }catch(Exception exe){
+        } catch (Exception exe) {
             //TODO:Handle this at least in console
         }
-            chat_user_name = dataSnapshot.child("user_name").getValue().toString();
+        chat_user_name = dataSnapshot.child("user_name").getValue().toString();
 
-            if (chat_room.equals(room_name))
-                chat_conversation.append(chat_user_name +" : "+clear_msg +" \n");
-       // }
+        if (chat_room.equals(room_name))
+            chat_conversation.append(chat_user_name + " : " + clear_msg + " \n");
+        // }
 
 
     }
-
 }

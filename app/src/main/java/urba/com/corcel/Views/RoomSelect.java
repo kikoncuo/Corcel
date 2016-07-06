@@ -1,4 +1,4 @@
-package urba.com.corcel;
+package urba.com.corcel.Views;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,7 +19,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,10 +26,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
+import urba.com.corcel.R;
 
 public class RoomSelect extends AppCompatActivity {
 
@@ -43,7 +39,6 @@ public class RoomSelect extends AppCompatActivity {
     private String name;
     private DatabaseReference root = FirebaseDatabase.getInstance().getReference();
     private DatabaseReference roomNames = root.child("RoomNames");
-    private DatabaseReference usersTemp = root.child("Users");
     private String temp_key;
     private String room_pass;
 
@@ -60,7 +55,7 @@ public class RoomSelect extends AppCompatActivity {
 
         listView.setAdapter(arrayAdapter);
 
-        request_user_name();
+        name = getIntent().getExtras().get("user_name").toString();
 
         add_room.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -104,35 +99,6 @@ public class RoomSelect extends AppCompatActivity {
 
     }
 
-    private void request_user_name() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Enter name:");
-
-        final EditText input_field = new EditText(this);
-
-        builder.setView(input_field);
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                name = input_field.getText().toString();
-                temp_key = usersTemp.push().getKey();
-                Map<String,Object> map = new HashMap<>();
-                map.put("user_name",name);
-                usersTemp.child("User"+temp_key).updateChildren(map);
-
-            }
-        });
-
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.cancel();
-                request_user_name();
-            }
-        });
-
-        builder.show();
-    }
 
     private void request_password_room(final String roomName) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

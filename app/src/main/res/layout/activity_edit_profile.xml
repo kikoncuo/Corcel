@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:text="Name"
+        android:ems="10"
+        android:id="@+id/editName"
+        android:layout_marginTop="45dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="20dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Change"
+        android:id="@+id/buttonChangeName"
+        android:layout_alignTop="@+id/editName"
+        android:layout_toRightOf="@+id/editName"
+        android:layout_toEndOf="@+id/editName"
+        android:layout_marginLeft="39dp"
+        android:layout_marginStart="39dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="TemplateID"
+        android:id="@+id/userKey"
+        android:layout_below="@+id/buttonChangeName"
+        android:layout_alignLeft="@+id/editName"
+        android:layout_alignStart="@+id/editName"
+        android:layout_marginTop="20dp" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="\?"
+        android:id="@+id/buttonKeyExplanation"
+        android:layout_below="@+id/buttonChangeName"
+        android:layout_alignLeft="@+id/buttonChangeName"
+        android:layout_alignStart="@+id/buttonChangeName" />
+
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/listFriends"
+        android:layout_alignLeft="@+id/userKey"
+        android:layout_alignStart="@+id/userKey"
+        android:layout_alignRight="@+id/buttonChangeName"
+        android:layout_alignEnd="@+id/buttonChangeName"
+        android:layout_below="@+id/buttonKeyExplanation"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="50dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Friends list"
+        android:id="@+id/textView5"
+        android:layout_below="@+id/buttonKeyExplanation"
+        android:layout_alignLeft="@+id/listFriends"
+        android:layout_alignStart="@+id/listFriends"
+        android:layout_marginTop="20dp" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:text="Buscar"
+        android:ems="10"
+        android:id="@+id/editText"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@+id/listFriends"
+        android:layout_alignStart="@+id/listFriends"
+        android:layout_marginBottom="20dp" />
+
+</RelativeLayout>
