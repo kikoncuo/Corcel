@@ -2,6 +2,7 @@ package urba.com.corcel.Views;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
@@ -13,7 +14,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.firebase.client.Firebase;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -39,10 +40,13 @@ public class EditProfile extends AppCompatActivity {
     private Button button_change_name;
     private Button button_key_explanation;
     private ListView list_friends;
+    private EditText edit_search_friends;
+    private Button button_search_friends;
+
     private List<String> list_friends_names;
     private ArrayAdapter<String> listAdapter ;
     private WaspHash user_local;
-    private WaspHash friends;
+    private WaspHash friends_local;
     private DatabaseReference root_firebase = FirebaseDatabase.getInstance().getReference();
     private DatabaseReference users_firebase = root_firebase.child("Users");
 
@@ -58,7 +62,8 @@ public class EditProfile extends AppCompatActivity {
         button_change_name = (Button) findViewById(R.id.buttonChangeName);
         button_key_explanation = (Button) findViewById(R.id.buttonKeyExplanation);
         list_friends = (ListView) findViewById(R.id.listFriends);
-
+        edit_search_friends = (EditText) findViewById(R.id.editTextSearchFriends);
+        button_search_friends = (Button) findViewById(R.id.buttonSearchFriends);
 
 
         // create a database, using the default files dir as path, database name and a password
@@ -75,18 +80,18 @@ public class EditProfile extends AppCompatActivity {
         edit_name.setText(current_name);
         text_view_user_key.setText(user_key);
 
-        friends = db.openOrCreateHash("friends");
-        list_friends_names = friends.getAllValues();
-        if (list_friends_names.size() == 0){
+        friends_local = db.openOrCreateHash("friends");
+        list_friends_names = friends_local.getAllValues();
+        if (list_friends_names.size() == 0) {
             List<String> nofriends = new ArrayList<String>();
             nofriends.add("You have no friends, and that's sad :(");
             addFriends(nofriends);
-        }else{
+        } else {
             addFriends(list_friends_names);
         }
 
 
-        friends = db.openOrCreateHash("friends");
+        friends_local = db.openOrCreateHash("friends");
 
 
         button_change_name.setOnClickListener(new View.OnClickListener() {
@@ -122,6 +127,32 @@ public class EditProfile extends AppCompatActivity {
                 builder.show();
             }
 
+        });
+
+        button_search_friends.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String key_searched_friend = edit_search_friends.getText().toString();
+                DatabaseReference friend_found = users_firebase.child(key_searched_friend);
+
+                String name_searched_friend = friend_found.child("user_name").toString();
+
+                if(!name_searched_friend.equals(null)){
+                    friends_local.put(key_searched_friend, name_searched_friend);
+                    addFriends(list_friends_names);
+                }else{
+                    //If friend is not found we tell them so in a popup
+                    AlertDialog.Builder builder = new AlertDialog.Builder(EditProfile.this);
+                    builder.setTitle("Friend not found");
+                    builder.setNegativeButton("Ok", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.cancel();
+                        }
+                    });
+                    builder.show();
+                }
+            }
         });
     }
     private void addFriends(List<String> friends){
