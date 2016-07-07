@@ -28,6 +28,7 @@ public class PlayScreen extends AppCompatActivity {
 
     private String user_name,room_name,room_pass;
     private DatabaseReference root =  FirebaseDatabase.getInstance().getReference();
+    DatabaseReference room_root;
     private String temp_key;
 
     @Override
@@ -45,6 +46,7 @@ public class PlayScreen extends AppCompatActivity {
         setTitle(" Room - "+room_name);
 
         root = FirebaseDatabase.getInstance().getReference().child("message");
+        room_root = root.child(room_name);
 
         btn_send_msg.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -53,8 +55,8 @@ public class PlayScreen extends AppCompatActivity {
                 Map<String,Object> map = new HashMap<>();
                 temp_key = root.push().getKey();
                 root.updateChildren(map);
-
-                DatabaseReference message_root = root.child("Msg"+temp_key);
+                room_root.updateChildren(map);
+                DatabaseReference message_root = room_root.child("Msg"+temp_key);
                 Map<String,Object> map2 = new HashMap<>();
                 map2.put("user_name",user_name);
                 //Encrypt the txt
@@ -77,7 +79,7 @@ public class PlayScreen extends AppCompatActivity {
             }
         });
 
-        root.addChildEventListener(new ChildEventListener() {
+        room_root.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
 
@@ -112,8 +114,7 @@ public class PlayScreen extends AppCompatActivity {
     private String chat_msg,chat_user_name,chat_room,clear_msg;
 
     private void append_chat_conversation(DataSnapshot dataSnapshot) {
-
-        //TODO: Ineficiente de cojones leer todos los msj, deberian estar anidados a su sala?
+        
         String test = dataSnapshot.getKey();
         chat_room = dataSnapshot.child("room_name").getValue().toString();
         chat_msg = dataSnapshot.child("text").getValue().toString();
@@ -126,10 +127,8 @@ public class PlayScreen extends AppCompatActivity {
             //TODO:Handle this at least in console
         }
         chat_user_name = dataSnapshot.child("user_name").getValue().toString();
+        chat_conversation.append(chat_user_name + " : " + clear_msg + " \n");
 
-        if (chat_room.equals(room_name))
-            chat_conversation.append(chat_user_name + " : " + clear_msg + " \n");
-        // }
 
 
     }

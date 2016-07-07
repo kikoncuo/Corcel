@@ -69,7 +69,7 @@ public class RoomSelect extends AppCompatActivity {
 
                 final EditText room_name = new EditText(RoomSelect.this);
                 final EditText room_password = new EditText(RoomSelect.this);
-                
+
                 layout.addView(room_name);
                 layout.addView(room_password);
                 builder.setView(layout);
@@ -78,6 +78,7 @@ public class RoomSelect extends AppCompatActivity {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         Map<String,Object> map = new HashMap<>();
                         map.put("room_name",room_name.getText().toString());
+                        temp_key = roomNames.push().getKey();
                         roomNames.child("Room"+temp_key).updateChildren(map);
                         room_pass = room_password.getText().toString();
                         Intent intent = new Intent(getApplicationContext(),PlayScreen.class);
