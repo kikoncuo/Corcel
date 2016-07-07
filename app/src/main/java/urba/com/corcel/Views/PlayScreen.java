@@ -114,7 +114,8 @@ public class PlayScreen extends AppCompatActivity {
     private String chat_msg,chat_user_name,chat_room,clear_msg;
 
     private void append_chat_conversation(DataSnapshot dataSnapshot) {
-        
+
+        //TODO: make this async
         String test = dataSnapshot.getKey();
         chat_room = dataSnapshot.child("room_name").getValue().toString();
         chat_msg = dataSnapshot.child("text").getValue().toString();
