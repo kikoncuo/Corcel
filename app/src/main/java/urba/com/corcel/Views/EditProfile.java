@@ -13,6 +13,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.firebase.client.Firebase;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -57,6 +58,7 @@ public class EditProfile extends AppCompatActivity {
         button_change_name = (Button) findViewById(R.id.buttonChangeName);
         button_key_explanation = (Button) findViewById(R.id.buttonKeyExplanation);
         list_friends = (ListView) findViewById(R.id.listFriends);
+
 
 
         // create a database, using the default files dir as path, database name and a password
