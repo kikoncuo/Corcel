@@ -10,6 +10,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -60,11 +61,41 @@ public class RoomSelect extends AppCompatActivity {
         add_room.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                temp_key = roomNames.push().getKey();
-                Map<String,Object> map = new HashMap<>();
-                map.put("room_name",room_name.getText().toString());
-                roomNames.child("Room"+temp_key).updateChildren(map);
-                room_name.setText("");
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(RoomSelect.this);
+                LinearLayout layout = new LinearLayout(RoomSelect.this);
+                layout.setOrientation(LinearLayout.VERTICAL);
+                builder.setTitle("Enter the name and password of the room:");
+
+                final EditText room_name = new EditText(RoomSelect.this);
+                final EditText room_password = new EditText(RoomSelect.this);
+                
+                layout.addView(room_name);
+                layout.addView(room_password);
+                builder.setView(layout);
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Map<String,Object> map = new HashMap<>();
+                        map.put("room_name",room_name.getText().toString());
+                        roomNames.child("Room"+temp_key).updateChildren(map);
+                        room_pass = room_password.getText().toString();
+                        Intent intent = new Intent(getApplicationContext(),PlayScreen.class);
+                        intent.putExtra("room_name",room_name.getText().toString() );
+                        intent.putExtra("user_name",name);
+                        intent.putExtra("room_pass",room_pass);
+                        room_name.setText("");
+                        startActivity(intent);
+                    }
+                });
+
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.cancel();
+                    }
+                });
+                builder.show();
             }
         });
 

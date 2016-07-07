@@ -75,12 +75,21 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="textPersonName"
-        android:text="Buscar"
+        android:text="Friend&apos;s ID"
         android:ems="10"
         android:id="@+id/editText"
         android:layout_alignParentBottom="true"
         android:layout_alignLeft="@+id/listFriends"
         android:layout_alignStart="@+id/listFriends"
         android:layout_marginBottom="20dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Search"
+        android:id="@+id/button"
+        android:layout_alignBottom="@+id/editText"
+        android:layout_alignRight="@+id/buttonChangeName"
+        android:layout_alignEnd="@+id/buttonChangeName" />
 
 </RelativeLayout>

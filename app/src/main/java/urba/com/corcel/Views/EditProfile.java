@@ -38,8 +38,10 @@ public class EditProfile extends AppCompatActivity {
     private Button button_change_name;
     private Button button_key_explanation;
     private ListView list_friends;
+    private List<String> list_friends_names;
     private ArrayAdapter<String> listAdapter ;
     private WaspHash user_local;
+    private WaspHash friends;
     private DatabaseReference root_firebase = FirebaseDatabase.getInstance().getReference();
     private DatabaseReference users_firebase = root_firebase.child("Users");
 
@@ -71,7 +73,18 @@ public class EditProfile extends AppCompatActivity {
         edit_name.setText(current_name);
         text_view_user_key.setText(user_key);
 
-        nofriends();
+        friends = db.openOrCreateHash("friends");
+        list_friends_names = friends.getAllValues();
+        if (list_friends_names.size() == 0){
+            List<String> nofriends = new ArrayList<String>();
+            nofriends.add("You have no friends, and that's sad :(");
+            addFriends(nofriends);
+        }else{
+            addFriends(list_friends_names);
+        }
+
+
+        friends = db.openOrCreateHash("friends");
 
 
         button_change_name.setOnClickListener(new View.OnClickListener() {
@@ -109,11 +122,10 @@ public class EditProfile extends AppCompatActivity {
 
         });
     }
-    private void nofriends(){
+    private void addFriends(List<String> friends){
         //Right now no one has friends, call method
-        String[] no_friends = new String[] { "You have no friends, and that's sad :("};
         ArrayList<String> planetList = new ArrayList<String>();
-        planetList.addAll( Arrays.asList(no_friends) );
+        planetList.addAll(friends);
         // Create ArrayAdapter using the planet list.
         listAdapter = new ArrayAdapter<String>(this, R.layout.simple_row, planetList);
         // Set the ArrayAdapter as the ListView's adapter.
