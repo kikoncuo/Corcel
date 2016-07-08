@@ -48,7 +48,7 @@ public class MainMenu  extends AppCompatActivity {
 
         listView = (ListView) findViewById(R.id.listViewMainMenu);
         // Create a list with the items.
-        String[] menu_options = new String[] { "Public rooms", "Private messages", "Files", "Edit profile"};
+        String[] menu_options = new String[] { "Public rooms", "Private messages", "Files", "Edit profile","CHAT DE PRUEBA"};
         ArrayList<String> planetList = new ArrayList<String>();
         planetList.addAll( Arrays.asList(menu_options) );
 
@@ -81,11 +81,17 @@ public class MainMenu  extends AppCompatActivity {
                 if (i==0) {
                     Intent intent = new Intent(getApplicationContext(), RoomSelect.class);
                     intent.putExtra("user_name", name);
+                    intent.putExtra("user_key", usrKey);
+
                     startActivity(intent);
                 }else if (i == 3){
                     Intent intent = new Intent(getApplicationContext(), EditProfile.class);
                     startActivity(intent);
+                }else if (i == 4) {
+                    Intent intent = new Intent(getApplicationContext(),ChatActivity.class);
+                    startActivity(intent);
                 }
+
             }
         });
 

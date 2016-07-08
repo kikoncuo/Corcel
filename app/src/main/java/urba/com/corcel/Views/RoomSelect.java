@@ -44,12 +44,13 @@ public class RoomSelect extends AppCompatActivity {
     private DatabaseReference roomNames = root.child("RoomNames");
     private String temp_key;
     private String room_pass;
+    private String usrKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_room_select);
-
+        usrKey = getIntent().getExtras().get("user_key").toString();
         add_room = (FloatingActionButton) findViewById(R.id.btn_add_room);
         listView = (ListView) findViewById(R.id.listView);
 
@@ -86,6 +87,7 @@ public class RoomSelect extends AppCompatActivity {
                         Intent intent = new Intent(getApplicationContext(),PlayScreen.class);
                         intent.putExtra("room_name",room_name.getText().toString() );
                         intent.putExtra("user_name",name);
+                        intent.putExtra("user_key",usrKey);
                         intent.putExtra("room_pass",room_pass);
                         room_name.setText("");
                         startActivity(intent);

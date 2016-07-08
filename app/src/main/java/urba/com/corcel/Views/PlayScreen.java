@@ -26,7 +26,7 @@ public class PlayScreen extends AppCompatActivity {
     private EditText input_msg;
     private TextView chat_conversation;
 
-    private String user_name,room_name,room_pass;
+    private String user_name,room_name,room_pass,usrKey;
     private DatabaseReference root =  FirebaseDatabase.getInstance().getReference();
     DatabaseReference room_root;
     private String temp_key;
@@ -43,6 +43,7 @@ public class PlayScreen extends AppCompatActivity {
         user_name = getIntent().getExtras().get("user_name").toString();
         room_name = getIntent().getExtras().get("room_name").toString();
         room_pass = getIntent().getExtras().get("room_pass").toString();
+        usrKey = getIntent().getExtras().get("user_key").toString();
         setTitle(" Room - "+room_name);
 
         root = FirebaseDatabase.getInstance().getReference().child("message");
