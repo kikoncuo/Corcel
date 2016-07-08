@@ -3,9 +3,12 @@ package urba.com.corcel.Views;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.firebase.database.ChildEventListener;
@@ -14,19 +17,25 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import urba.com.corcel.Libraries.AesCbcWithIntegrity;
+import urba.com.corcel.Models.ChatMessage;
 import urba.com.corcel.R;
 
 
 public class PlayScreen extends AppCompatActivity {
-    private Button btn_send_msg;
-    private EditText input_msg;
-    private TextView chat_conversation;
+    private EditText messageET;
+    private ListView messagesContainer;
+    private Button sendBtn;
+    private ChatAdapter adapter;
+    private ArrayList<ChatMessage> chatHistory;
 
-    private String user_name,room_name,room_pass,usrKey;
+    private String user_name,room_name,room_pass;
     private DatabaseReference root =  FirebaseDatabase.getInstance().getReference();
     DatabaseReference room_root;
     private String temp_key;
@@ -36,20 +45,23 @@ public class PlayScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_screen);
 
-        btn_send_msg = (Button) findViewById(R.id.btn_send);
-        input_msg = (EditText) findViewById(R.id.msg_input);
-        chat_conversation = (TextView) findViewById(R.id.textView);
+        messagesContainer = (ListView) findViewById(R.id.messagesContainer);
+        messageET = (EditText) findViewById(R.id.messageEdit);
+        sendBtn = (Button) findViewById(R.id.chatSendButton);
 
+
+        RelativeLayout container = (RelativeLayout) findViewById(R.id.container);
+        adapter = new ChatAdapter(PlayScreen.this, new ArrayList<ChatMessage>());
+        messagesContainer.setAdapter(adapter);
         user_name = getIntent().getExtras().get("user_name").toString();
         room_name = getIntent().getExtras().get("room_name").toString();
         room_pass = getIntent().getExtras().get("room_pass").toString();
-        usrKey = getIntent().getExtras().get("user_key").toString();
         setTitle(" Room - "+room_name);
 
         root = FirebaseDatabase.getInstance().getReference().child("message");
         room_root = root.child(room_name);
 
-        btn_send_msg.setOnClickListener(new View.OnClickListener() {
+        sendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
@@ -64,7 +76,7 @@ public class PlayScreen extends AppCompatActivity {
                 String encrypted_txt="";
                 try{
                     AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "S4ltyS4ltRand0mWriT1ngoNtheWall".getBytes());
-                    AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = AesCbcWithIntegrity.encrypt(input_msg.getText().toString(), keys);
+                    AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = AesCbcWithIntegrity.encrypt(messageET.getText().toString(), keys);
                     encrypted_txt = (cipherTextIvMac.toString());
                 }catch(Exception exe){
                     //TODO:Handle this at least in console
@@ -76,7 +88,7 @@ public class PlayScreen extends AppCompatActivity {
 
                 message_root.updateChildren(map2);
 
-                input_msg.setText("");
+                messageET.setText("");
             }
         });
 
@@ -112,6 +124,13 @@ public class PlayScreen extends AppCompatActivity {
 
     }
 
+
+
+
+
+
+
+
     private String chat_msg,chat_user_name,chat_room,clear_msg;
 
     private void append_chat_conversation(DataSnapshot dataSnapshot) {
@@ -129,9 +148,27 @@ public class PlayScreen extends AppCompatActivity {
             //TODO:Handle this at least in console
         }
         chat_user_name = dataSnapshot.child("user_name").getValue().toString();
-        chat_conversation.append(chat_user_name + " : " + clear_msg + " \n");
+        //chat_conversation.append(chat_user_name + " : " + clear_msg + " \n");
+        if(clear_msg != null){
+            ChatMessage chatMessage = new ChatMessage();
+            chatMessage.setId(122);//dummy
+            chatMessage.setMessage(clear_msg);
+            chatMessage.setDate(DateFormat.getDateTimeInstance().format(new Date()));
+            chatMessage.setUser(chat_user_name);
+            chatMessage.setMe(chat_user_name.equals(user_name));
 
-
+            displayMessage(chatMessage);
+        }
 
     }
+    public void displayMessage(ChatMessage message) {
+        adapter.add(message);
+        adapter.notifyDataSetChanged();
+        scroll();
+    }
+    private void scroll() {
+        messagesContainer.setSelection(messagesContainer.getCount() - 1);
+    }
+
+
 }

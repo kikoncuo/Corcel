@@ -73,6 +73,7 @@ public class ChatAdapter extends BaseAdapter {
         setAlignment(holder, myMsg);
         holder.txtMessage.setText(chatMessage.getMessage());
         holder.txtInfo.setText(chatMessage.getDate());
+        holder.userMessage.setText(chatMessage.getUser());
 
         return convertView;
     }
@@ -132,14 +133,17 @@ public class ChatAdapter extends BaseAdapter {
     private ViewHolder createViewHolder(View v) {
         ViewHolder holder = new ViewHolder();
         holder.txtMessage = (TextView) v.findViewById(R.id.txtMessage);
+        holder.userMessage = (TextView) v.findViewById(R.id.userMessage);
         holder.content = (LinearLayout) v.findViewById(R.id.content);
         holder.contentWithBG = (LinearLayout) v.findViewById(R.id.contentWithBackground);
         holder.txtInfo = (TextView) v.findViewById(R.id.txtInfo);
+
         return holder;
     }
 
     private static class ViewHolder {
         public TextView txtMessage;
+        public TextView userMessage;
         public TextView txtInfo;
         public LinearLayout content;
         public LinearLayout contentWithBG;
