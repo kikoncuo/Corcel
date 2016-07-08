@@ -3,8 +3,10 @@ package urba.com.corcel.Views;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -31,7 +33,7 @@ import urba.com.corcel.R;
 
 public class RoomSelect extends AppCompatActivity {
 
-    private Button  add_room;
+    private FloatingActionButton add_room;
     private EditText room_name;
 
     private ListView listView;
@@ -48,8 +50,7 @@ public class RoomSelect extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_room_select);
 
-        add_room = (Button) findViewById(R.id.btn_add_room);
-        room_name = (EditText) findViewById(R.id.room_name_edittext);
+        add_room = (FloatingActionButton) findViewById(R.id.btn_add_room);
         listView = (ListView) findViewById(R.id.listView);
 
         arrayAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,list_of_rooms);
@@ -69,7 +70,8 @@ public class RoomSelect extends AppCompatActivity {
 
                 final EditText room_name = new EditText(RoomSelect.this);
                 final EditText room_password = new EditText(RoomSelect.this);
-
+                room_password.setInputType(InputType.TYPE_CLASS_TEXT |
+                        InputType.TYPE_TEXT_VARIATION_PASSWORD);
                 layout.addView(room_name);
                 layout.addView(room_password);
                 builder.setView(layout);
@@ -137,7 +139,8 @@ public class RoomSelect extends AppCompatActivity {
         builder.setTitle("Enter the password for the room:");
 
         final EditText input_field = new EditText(this);
-
+        input_field.setInputType(InputType.TYPE_CLASS_TEXT |
+                InputType.TYPE_TEXT_VARIATION_PASSWORD);
         builder.setView(input_field);
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
