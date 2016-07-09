@@ -197,6 +197,17 @@ public class RoomSelect extends AppCompatActivity {
                             startActivity(intent);
                         } catch (Exception exe) {
                             //TODO:Crear Dialogo de error
+                            AlertDialog.Builder builder = new AlertDialog.Builder(RoomSelect.this);
+                            LinearLayout layout = new LinearLayout(RoomSelect.this);
+                            layout.setOrientation(LinearLayout.VERTICAL);
+                            builder.setTitle("Wrong password");
+                            builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    dialogInterface.cancel();
+                                }
+                            });
+                            builder.show();
                         }
 
                     }
