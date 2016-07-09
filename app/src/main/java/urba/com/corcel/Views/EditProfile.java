@@ -14,9 +14,12 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.firebase.client.Firebase;
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import net.rehacktive.waspdb.WaspDb;
 import net.rehacktive.waspdb.WaspFactory;
@@ -27,6 +30,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import urba.com.corcel.R;
 
@@ -132,13 +136,28 @@ public class EditProfile extends AppCompatActivity {
         button_search_friends.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                final boolean[] existsFriend = {true};
+                final boolean[] flag = {false};
                 String key_searched_friend = edit_search_friends.getText().toString();
                 DatabaseReference friend_found = users_firebase.child(key_searched_friend);
+                final String[] name_searched_friend = {""};
+                /*friend_found.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+                        if(snapshot.child("user_name").exists()) {
+                            name_searched_friend[0] = snapshot.child("user_name").getValue().toString();
+                        } else {
+                            existsFriend[0] = false;
+                        }
+                        flag[0] = true;
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError firebaseError) {
+                    }
+                });*/
 
-                String name_searched_friend = friend_found.child("user_name").toString();
-
-                if(!name_searched_friend.equals(null)){
-                    friends_local.put(key_searched_friend, name_searched_friend);
+                if(!name_searched_friend[0].equals(null)){
+                    friends_local.put(key_searched_friend, name_searched_friend[0]);
                     addFriends(list_friends_names);
                 }else{
                     //If friend is not found we tell them so in a popup
@@ -156,7 +175,7 @@ public class EditProfile extends AppCompatActivity {
         });
     }
     private void addFriends(List<String> friends){
-        //Right now no one has friends, call method
+
         ArrayList<String> planetList = new ArrayList<String>();
         planetList.addAll(friends);
         // Create ArrayAdapter using the planet list.

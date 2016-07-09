@@ -35,7 +35,7 @@ public class PlayScreen extends AppCompatActivity {
     private ChatAdapter adapter;
     private ArrayList<ChatMessage> chatHistory;
 
-    private String user_name,room_name,room_pass;
+    private String user_name,room_name,room_pass, current_user_key;
     private DatabaseReference root =  FirebaseDatabase.getInstance().getReference();
     DatabaseReference room_root;
     private String temp_key;
@@ -51,11 +51,12 @@ public class PlayScreen extends AppCompatActivity {
 
 
         RelativeLayout container = (RelativeLayout) findViewById(R.id.container);
-        adapter = new ChatAdapter(PlayScreen.this, new ArrayList<ChatMessage>());
-        messagesContainer.setAdapter(adapter);
         user_name = getIntent().getExtras().get("user_name").toString();
         room_name = getIntent().getExtras().get("room_name").toString();
         room_pass = getIntent().getExtras().get("room_pass").toString();
+        current_user_key = getIntent().getExtras().get("user_key").toString();
+        adapter = new ChatAdapter(PlayScreen.this, new ArrayList<ChatMessage>(), current_user_key);
+        messagesContainer.setAdapter(adapter);
         setTitle(" Room - "+room_name);
 
         root = FirebaseDatabase.getInstance().getReference().child("message");
@@ -64,31 +65,36 @@ public class PlayScreen extends AppCompatActivity {
         sendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (!messageET.getText().toString().equals("")) {
+                    Map<String, Object> map = new HashMap<>();
+                    temp_key = root.push().getKey();
+                    root.updateChildren(map);
+                    room_root.updateChildren(map);
+                    DatabaseReference message_root = room_root.child("Msg" + temp_key);
+                    Map<String, Object> map2 = new HashMap<>();
+                    map2.put("user_key", current_user_key);
+                    //Encrypt the txt
+                    String encrypted_txt = "";
+                    //TODO: make this async
+                    try {
+                        AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "S4ltyS4ltRand0mWriT1ngoNtheWall".getBytes());
+                        AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = AesCbcWithIntegrity.encrypt(messageET.getText().toString(), keys);
+                        encrypted_txt = (cipherTextIvMac.toString());
+                    } catch (Exception exe) {
+                        //TODO:Handle this at least in console
+                    }
+                    //Save encrypted text
+                    map2.put("text", encrypted_txt);
+                    //TODO: store the ID of the room instead of the name
+                    map2.put("room_name", room_name);
 
-                Map<String,Object> map = new HashMap<>();
-                temp_key = root.push().getKey();
-                root.updateChildren(map);
-                room_root.updateChildren(map);
-                DatabaseReference message_root = room_root.child("Msg"+temp_key);
-                Map<String,Object> map2 = new HashMap<>();
-                map2.put("user_name",user_name);
-                //Encrypt the txt
-                String encrypted_txt="";
-                try{
-                    AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "S4ltyS4ltRand0mWriT1ngoNtheWall".getBytes());
-                    AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = AesCbcWithIntegrity.encrypt(messageET.getText().toString(), keys);
-                    encrypted_txt = (cipherTextIvMac.toString());
-                }catch(Exception exe){
-                    //TODO:Handle this at least in console
+                    map2.put("user_name", user_name);
+
+                    message_root.updateChildren(map2);
+
+
+                    messageET.setText("");
                 }
-                //Save encrypted text
-                map2.put("text",encrypted_txt);
-                //TODO: store the ID of the room instead of the name
-                map2.put("room_name",room_name);
-
-                message_root.updateChildren(map2);
-
-                messageET.setText("");
             }
         });
 
@@ -126,12 +132,7 @@ public class PlayScreen extends AppCompatActivity {
 
 
 
-
-
-
-
-
-    private String chat_msg,chat_user_name,chat_room,clear_msg;
+    private String chat_msg,chat_user_key,chat_room,clear_msg;
 
     private void append_chat_conversation(DataSnapshot dataSnapshot) {
 
@@ -147,16 +148,16 @@ public class PlayScreen extends AppCompatActivity {
         } catch (Exception exe) {
             //TODO:Handle this at least in console
         }
-        chat_user_name = dataSnapshot.child("user_name").getValue().toString();
+        chat_user_key = dataSnapshot.child("user_key").getValue().toString();
         //chat_conversation.append(chat_user_name + " : " + clear_msg + " \n");
         if(clear_msg != null){
             ChatMessage chatMessage = new ChatMessage();
-            chatMessage.setId(122);//dummy
+            chatMessage.setId(dataSnapshot.getKey());
             chatMessage.setMessage(clear_msg);
             chatMessage.setDate(DateFormat.getDateTimeInstance().format(new Date()));
-            chatMessage.setUser(chat_user_name);
-            chatMessage.setMe(chat_user_name.equals(user_name));
-
+            chatMessage.setUserId(dataSnapshot.child("user_key").getValue().toString());
+            chatMessage.setUser(dataSnapshot.child("user_name").getValue().toString());
+            chatMessage.setMe(chat_user_key.equals(current_user_key));
             displayMessage(chatMessage);
         }
 

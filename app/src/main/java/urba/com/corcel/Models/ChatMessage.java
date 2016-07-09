@@ -4,16 +4,17 @@ package urba.com.corcel.Models;
  * Created by aleja_000 on 08/07/2016.
  */
 public class ChatMessage {
-    private long id;
+    private String id;
     private boolean isMe;
     private String message;
     private String user;
+    private String userId;
     private String dateTime;
 
-    public long getId() {
+    public String getId() {
         return id;
     }
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
     public boolean getIsme() {
@@ -27,6 +28,13 @@ public class ChatMessage {
     }
     public void setMessage(String message) {
         this.message = message;
+    }
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getDate() {

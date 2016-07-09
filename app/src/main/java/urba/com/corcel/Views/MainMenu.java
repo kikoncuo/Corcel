@@ -65,6 +65,7 @@ public class MainMenu  extends AppCompatActivity {
 
         //UNCOMMENT THIS LINE TO RESET WASPDB
         //db.removeHash("user");
+        //db.removeHash("friends");
 
         // now create an WaspHash, it's like a sql table
         user = db.openOrCreateHash("user");
@@ -81,7 +82,8 @@ public class MainMenu  extends AppCompatActivity {
                 if (i==0) {
                     Intent intent = new Intent(getApplicationContext(), RoomSelect.class);
                     intent.putExtra("user_name", name);
-
+                    List<String>  allkeys = user.getAllKeys();
+                    intent.putExtra("user_key", allkeys.get(0));
                     startActivity(intent);
                 }else if (i == 3){
                     Intent intent = new Intent(getApplicationContext(), EditProfile.class);
@@ -90,8 +92,6 @@ public class MainMenu  extends AppCompatActivity {
 
             }
         });
-
-
     }
 
 
