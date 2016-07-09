@@ -23,10 +23,12 @@ public class ChatAdapter extends BaseAdapter {
 
     private final List<ChatMessage> chatMessages;
     private Activity context;
+    private String currentUserId;
 
-    public ChatAdapter(Activity context, List<ChatMessage> chatMessages) {
+    public ChatAdapter(Activity context, List<ChatMessage> chatMessages, String currentUserId) {
         this.context = context;
         this.chatMessages = chatMessages;
+        this.currentUserId = currentUserId;
     }
 
     @Override
@@ -66,6 +68,7 @@ public class ChatAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
+        //TODO: change method getIsme and do my own check
         boolean myMsg = chatMessage.getIsme() ;//Just a dummy check
         //to simulate whether it me or other sender
 
@@ -148,4 +151,10 @@ public class ChatAdapter extends BaseAdapter {
         public LinearLayout content;
         public LinearLayout contentWithBG;
     }
+
+    private boolean isMe(){
+
+        return true;
+    }
+
 }

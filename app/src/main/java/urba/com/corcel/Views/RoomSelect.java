@@ -43,7 +43,7 @@ public class RoomSelect extends AppCompatActivity {
     private DatabaseReference root = FirebaseDatabase.getInstance().getReference();
     private DatabaseReference roomNames = root.child("RoomNames");
     private String temp_key;
-    private String room_pass;
+    private String room_pass, current_user_key;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +57,8 @@ public class RoomSelect extends AppCompatActivity {
         listView.setAdapter(arrayAdapter);
 
         name = getIntent().getExtras().get("user_name").toString();
+        current_user_key = getIntent().getExtras().get("user_key").toString();
+
 
         add_room.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -77,6 +79,8 @@ public class RoomSelect extends AppCompatActivity {
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+                        //TODO: can't create 2 rooms with the same name
+                        
                         Map<String,Object> map = new HashMap<>();
                         map.put("room_name",room_name.getText().toString());
                         temp_key = roomNames.push().getKey();
@@ -86,6 +90,7 @@ public class RoomSelect extends AppCompatActivity {
                         intent.putExtra("room_name",room_name.getText().toString() );
                         intent.putExtra("user_name",name);
                         intent.putExtra("room_pass",room_pass);
+                        intent.putExtra("user_key",current_user_key);
                         room_name.setText("");
                         startActivity(intent);
                     }
@@ -149,6 +154,7 @@ public class RoomSelect extends AppCompatActivity {
                 intent.putExtra("room_name",roomName );
                 intent.putExtra("user_name",name);
                 intent.putExtra("room_pass",room_pass);
+                intent.putExtra("user_key",current_user_key);
                 startActivity(intent);
             }
         });
