@@ -64,7 +64,7 @@ public class MainMenu  extends AppCompatActivity {
         WaspDb db = WaspFactory.openOrCreateDatabase(path,databaseName,password);
 
         //UNCOMMENT THIS LINE TO RESET WASPDB
-        db.removeHash("user");
+        //db.removeHash("user");
         //db.removeHash("friends");
 
         // now create an WaspHash, it's like a sql table

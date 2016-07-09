@@ -80,7 +80,7 @@ public class RoomSelect extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         //TODO: can't create 2 rooms with the same name
-                        
+
                         Map<String,Object> map = new HashMap<>();
                         map.put("room_name",room_name.getText().toString());
                         temp_key = roomNames.push().getKey();
