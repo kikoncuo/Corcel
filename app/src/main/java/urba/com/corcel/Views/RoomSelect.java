@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import urba.com.corcel.Libraries.AesCbcWithIntegrity;
+import urba.com.corcel.Models.Room;
 import urba.com.corcel.R;
 
 public class RoomSelect extends AppCompatActivity {
@@ -41,8 +42,8 @@ public class RoomSelect extends AppCompatActivity {
     private EditText room_name;
 
     private ListView listView;
-    private ArrayAdapter<String> arrayAdapter;
-    private ArrayList<String> list_of_rooms = new ArrayList<>();
+    private ArrayAdapter<Room> arrayAdapter;
+    private ArrayList<Room> list_of_rooms = new ArrayList<>();
     private String name;
     private DatabaseReference root = FirebaseDatabase.getInstance().getReference();
     private DatabaseReference roomNames = root.child("RoomNames");
@@ -129,11 +130,15 @@ public class RoomSelect extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                Set<String> set = new HashSet<>();
+                Set<Room> set = new HashSet<>();
                 Iterator i = dataSnapshot.getChildren().iterator();
                 while (i.hasNext()){
-                    set.add(((DataSnapshot)i.next()).child("room_name").getValue().toString());
-                }
+                    DataSnapshot roomSnapshot = (DataSnapshot)i.next();
+                    set.add(new Room(
+                            roomSnapshot.child("room_name").getValue().toString(),
+                            roomSnapshot.getKey().toString(),
+                            roomSnapshot.child("room_hash").getValue().toString()));
+                              }
 
                 list_of_rooms.clear();
                 list_of_rooms.addAll(set);
@@ -150,14 +155,17 @@ public class RoomSelect extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                request_password_room(((TextView)view).getText().toString());
+
+               Room room = (Room) adapterView.getItemAtPosition(i);
+
+                request_password_room(room);
             }
         });
 
     }
 
 
-    private void request_password_room(final String roomName) {
+    private void request_password_room(final Room room) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Enter the password for the room:");
 
@@ -173,19 +181,16 @@ public class RoomSelect extends AppCompatActivity {
 
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        Iterable<DataSnapshot> i = dataSnapshot.child("message").child(roomName).getChildren();
-                        //String chat_msg = ((DataSnapshot)i.iterator().next()).child("text").getValue().toString();
-                        //AQUI PUTO ALEJOIDEEE CAMBIA EL roomName POR TU MEGAMODELOOOOOOOO
-                        DataSnapshot rooms = dataSnapshot.child("RoomNames").child(roomName).child("room_hash");
+                        Iterable<DataSnapshot> i = dataSnapshot.child("message").child(room.getName()).getChildren();
                         room_pass = input_field.getText().toString();
 
                         try {
                             AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "S4ltyS4ltRand0mWriT1ngoNtheWall".getBytes());
-                            AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = new AesCbcWithIntegrity.CipherTextIvMac(rooms.getValue().toString());
+                            AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = new AesCbcWithIntegrity.CipherTextIvMac(room.getHash());
                             AesCbcWithIntegrity.decryptString(cipherTextIvMac, keys);
 
                             Intent intent = new Intent(getApplicationContext(),PlayScreen.class);
-                            intent.putExtra("room_name",roomName );
+                            intent.putExtra("room_name",room.getName() );
                             intent.putExtra("user_name",name);
                             intent.putExtra("room_pass",room_pass);
                             intent.putExtra("user_key",current_user_key);
