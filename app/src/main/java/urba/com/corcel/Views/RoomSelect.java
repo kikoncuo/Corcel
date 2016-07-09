@@ -3,6 +3,7 @@ package urba.com.corcel.Views;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +17,8 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -29,6 +32,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import urba.com.corcel.Libraries.AesCbcWithIntegrity;
 import urba.com.corcel.R;
 
 public class RoomSelect extends AppCompatActivity {
@@ -42,6 +46,7 @@ public class RoomSelect extends AppCompatActivity {
     private String name;
     private DatabaseReference root = FirebaseDatabase.getInstance().getReference();
     private DatabaseReference roomNames = root.child("RoomNames");
+    private DatabaseReference messages = root.child("message");
     private String temp_key;
     private String room_pass;
 
@@ -107,8 +112,11 @@ public class RoomSelect extends AppCompatActivity {
 
                 Set<String> set = new HashSet<>();
                 Iterator i = dataSnapshot.getChildren().iterator();
+
+                //TODO:Obtener por id y no por nombre la room
                 while (i.hasNext()){
-                    set.add(((DataSnapshot)i.next()).child("room_name").getValue().toString());
+                    DataSnapshot roomSnapshot = (DataSnapshot) i.next();
+                    set.add((roomSnapshot.child("room_name").getValue().toString()));
                 }
 
                 list_of_rooms.clear();
@@ -144,12 +152,37 @@ public class RoomSelect extends AppCompatActivity {
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                room_pass = input_field.getText().toString();
-                Intent intent = new Intent(getApplicationContext(),PlayScreen.class);
-                intent.putExtra("room_name",roomName );
-                intent.putExtra("user_name",name);
-                intent.putExtra("room_pass",room_pass);
-                startActivity(intent);
+
+                root.addValueEventListener(new ValueEventListener() {
+
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Iterable<DataSnapshot> i = dataSnapshot.child("message").child(roomName).getChildren();
+                        String chat_msg = ((DataSnapshot)i.iterator().next()).child("text").getValue().toString();
+                        room_pass = input_field.getText().toString();
+
+                        try {
+                            AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "S4ltyS4ltRand0mWriT1ngoNtheWall".getBytes());
+                            AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = new AesCbcWithIntegrity.CipherTextIvMac(chat_msg);
+                            AesCbcWithIntegrity.decryptString(cipherTextIvMac, keys);
+
+                            Intent intent = new Intent(getApplicationContext(),PlayScreen.class);
+                            intent.putExtra("room_name",roomName );
+                            intent.putExtra("user_name",name);
+                            intent.putExtra("room_pass",room_pass);
+                            startActivity(intent);
+                        } catch (Exception exe) {
+                            //TODO:Crear Dialogo de error
+                        }
+
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+
             }
         });
 
