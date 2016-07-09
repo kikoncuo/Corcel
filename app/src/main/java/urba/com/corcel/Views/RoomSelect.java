@@ -88,9 +88,23 @@ public class RoomSelect extends AppCompatActivity {
 
                         Map<String,Object> map = new HashMap<>();
                         map.put("room_name",room_name.getText().toString());
+                        room_pass = room_password.getText().toString();
+
+                        //TODO: limpiar esto con un metodo que haga la encriptacion y desencriptacion completas
+                        String encrypted_pass="";
+                        try {
+                            AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "S4ltyS4ltRand0mWriT1ngoNtheWall".getBytes());
+                            AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = AesCbcWithIntegrity.encrypt(room_password.getText().toString(), keys);
+                            encrypted_pass = (cipherTextIvMac.toString());
+                        } catch (Exception exe) {
+                            //TODO:Handle this at least in console
+                        }
+
+
+                        map.put("room_hash",encrypted_pass);
                         temp_key = roomNames.push().getKey();
                         roomNames.child("Room"+temp_key).updateChildren(map);
-                        room_pass = room_password.getText().toString();
+
                         Intent intent = new Intent(getApplicationContext(),PlayScreen.class);
                         intent.putExtra("room_name",room_name.getText().toString() );
                         intent.putExtra("user_name",name);
@@ -160,12 +174,14 @@ public class RoomSelect extends AppCompatActivity {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Iterable<DataSnapshot> i = dataSnapshot.child("message").child(roomName).getChildren();
-                        String chat_msg = ((DataSnapshot)i.iterator().next()).child("text").getValue().toString();
+                        //String chat_msg = ((DataSnapshot)i.iterator().next()).child("text").getValue().toString();
+                        //AQUI PUTO ALEJOIDEEE CAMBIA EL roomName POR TU MEGAMODELOOOOOOOO
+                        DataSnapshot rooms = dataSnapshot.child("RoomNames").child(roomName).child("room_hash");
                         room_pass = input_field.getText().toString();
 
                         try {
                             AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "S4ltyS4ltRand0mWriT1ngoNtheWall".getBytes());
-                            AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = new AesCbcWithIntegrity.CipherTextIvMac(chat_msg);
+                            AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = new AesCbcWithIntegrity.CipherTextIvMac(rooms.getValue().toString());
                             AesCbcWithIntegrity.decryptString(cipherTextIvMac, keys);
 
                             Intent intent = new Intent(getApplicationContext(),PlayScreen.class);
