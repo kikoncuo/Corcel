@@ -51,9 +51,6 @@ public class RoomSelect extends AppCompatActivity {
     private DataSnapshot dataSnapshot_downloaded;
     private String temp_key;
     private String room_pass, current_user_key;
-    AesCbcWithIntegrity.SecretKeys keys;
-    AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac;
-    Room room;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,15 +60,6 @@ public class RoomSelect extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.listView);
         input_search = (EditText)  findViewById(R.id.input_search);
         arrayAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,list_of_rooms);
-
-        //TODO: make this an async task
-        try {
-            keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "shortsalt".getBytes());
-            cipherTextIvMac = new AesCbcWithIntegrity.CipherTextIvMac(room.getHash());
-
-        } catch (Exception exe) {
-
-        }
 
         listView.setAdapter(arrayAdapter);
 
@@ -152,7 +140,7 @@ public class RoomSelect extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-               room = (Room) adapterView.getItemAtPosition(i);
+               Room room = (Room) adapterView.getItemAtPosition(i);
 
                 request_password_room(room);
             }
@@ -224,6 +212,8 @@ public class RoomSelect extends AppCompatActivity {
         }else{
             room_pass = password_join_editText.getText().toString();
             try {
+                AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "shortsalt".getBytes());
+                AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = new AesCbcWithIntegrity.CipherTextIvMac(room.getHash());
                 AesCbcWithIntegrity.decryptString(cipherTextIvMac, keys);
 
                 startChatRoomActivity(room.getName(), room_pass, room.isNoPass(), name, current_user_key);
