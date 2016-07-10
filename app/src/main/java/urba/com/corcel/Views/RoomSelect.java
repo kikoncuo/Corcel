@@ -53,7 +53,7 @@ public class RoomSelect extends AppCompatActivity {
     EditText password_join_editText;
 
     private ListView listView;
-    private ArrayAdapter<Room> arrayAdapter;
+    private RoomAdapter<Room> arrayAdapter;
     private ArrayList<Room> list_of_rooms = new ArrayList<>();
     private String name;
     private DatabaseReference root = FirebaseDatabase.getInstance().getReference();
@@ -72,7 +72,7 @@ public class RoomSelect extends AppCompatActivity {
         setSupportActionBar(toolbar);
         add_room = (FloatingActionButton) findViewById(R.id.btn_add_room);
         listView = (ListView) findViewById(R.id.listView);
-        arrayAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,list_of_rooms);
+        arrayAdapter = new RoomAdapter<>(this,list_of_rooms);
 
         listView.setAdapter(arrayAdapter);
 
