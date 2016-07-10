@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.client.Firebase;
 import com.google.firebase.database.DataSnapshot;
@@ -100,13 +101,16 @@ public class EditProfile extends AppCompatActivity {
         button_change_name.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                user_local.remove(user_key);
-                DatabaseReference actualuser = users_firebase.child(user_key);
-                actualuser.removeValue();
-                Map<String, Object> map = new HashMap<>();
-                map.put("user_name", edit_name.getText().toString());
-                users_firebase.child(user_key).updateChildren(map);
-                user_local.put(user_key, edit_name.getText().toString());
+                if (!current_name.equals(edit_name.getText().toString())) {
+                    user_local.remove(user_key);
+                    DatabaseReference actualuser = users_firebase.child(user_key);
+                    actualuser.removeValue();
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("user_name", edit_name.getText().toString());
+                    users_firebase.child(user_key).updateChildren(map);
+                    user_local.put(user_key, edit_name.getText().toString());
+                    Toast.makeText(view.getContext(), "Your name was changed", Toast.LENGTH_LONG).show();
+                }
             }
         });
 
