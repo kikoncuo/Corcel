@@ -46,7 +46,6 @@ public class EditProfile extends AppCompatActivity {
     private ListView list_friends;
     private EditText edit_search_friends;
     private Button button_search_friends;
-
     private List<String> list_friends_names;
     private ArrayAdapter<String> listAdapter ;
     private WaspHash user_local;

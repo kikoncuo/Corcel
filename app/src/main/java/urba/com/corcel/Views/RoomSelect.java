@@ -23,6 +23,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import net.rehacktive.waspdb.WaspDb;
+import net.rehacktive.waspdb.WaspFactory;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,7 +66,14 @@ public class RoomSelect extends AppCompatActivity {
 
         listView.setAdapter(arrayAdapter);
 
-        name = getIntent().getExtras().get("user_name").toString();
+        //We get the name from local db now
+        String path = getFilesDir().getPath();
+        String databaseName = "myDb";
+        String password = "passw0rdsdfgbshgv";
+        WaspDb db = WaspFactory.openOrCreateDatabase(path,databaseName,password);
+        name = db.openOrCreateHash("user").getAllValues().get(0).toString();
+
+
         current_user_key = getIntent().getExtras().get("user_key").toString();
 
 
