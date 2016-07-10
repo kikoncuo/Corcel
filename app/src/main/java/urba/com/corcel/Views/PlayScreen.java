@@ -136,7 +136,7 @@ public class PlayScreen extends AppCompatActivity {
 
     private void append_chat_conversation(DataSnapshot dataSnapshot) {
 
-        //TODO: make this async
+        //TODO: make this async this is the biggest bottleneck in performance as now
         String test = dataSnapshot.getKey();
         chat_room = dataSnapshot.child("room_name").getValue().toString();
         chat_msg = dataSnapshot.child("text").getValue().toString();
@@ -146,7 +146,6 @@ public class PlayScreen extends AppCompatActivity {
             AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = new AesCbcWithIntegrity.CipherTextIvMac(chat_msg);
             clear_msg = AesCbcWithIntegrity.decryptString(cipherTextIvMac, keys);
         } catch (Exception exe) {
-            //TODO:Handle this at least in console
         }
         chat_user_key = dataSnapshot.child("user_key").getValue().toString();
         //chat_conversation.append(chat_user_name + " : " + clear_msg + " \n");

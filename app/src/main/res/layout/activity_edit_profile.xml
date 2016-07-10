@@ -36,6 +36,7 @@
         android:layout_below="@+id/buttonChangeName"
         android:layout_alignLeft="@+id/editName"
         android:layout_alignStart="@+id/editName"
+        android:textIsSelectable="true"
         android:layout_marginTop="20dp" />
 
     <Button

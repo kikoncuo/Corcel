@@ -40,6 +40,7 @@ public class RoomSelect extends AppCompatActivity {
 
     private FloatingActionButton add_room;
     private EditText room_name;
+    EditText password_join_editText;
 
     private ListView listView;
     private ArrayAdapter<Room> arrayAdapter;
@@ -48,6 +49,7 @@ public class RoomSelect extends AppCompatActivity {
     private DatabaseReference root = FirebaseDatabase.getInstance().getReference();
     private DatabaseReference roomNames = root.child("RoomNames");
     private DatabaseReference messages = root.child("message");
+    private DataSnapshot dataSnapshot_downloaded;
     private String temp_key;
     private String room_pass, current_user_key;
 
@@ -93,12 +95,14 @@ public class RoomSelect extends AppCompatActivity {
 
                         //TODO: limpiar esto con un metodo que haga la encriptacion y desencriptacion completas
                         String encrypted_pass="";
-                        try {
-                            AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "S4ltyS4ltRand0mWriT1ngoNtheWall".getBytes());
-                            AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = AesCbcWithIntegrity.encrypt(room_password.getText().toString(), keys);
-                            encrypted_pass = (cipherTextIvMac.toString());
-                        } catch (Exception exe) {
-                            //TODO:Handle this at least in console
+                        if (!room_password.getText().toString().equals("")) {
+                            try {
+                                AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "S4ltyS4ltRand0mWriT1ngoNtheWall".getBytes());
+                                AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = AesCbcWithIntegrity.encrypt(room_password.getText().toString(), keys);
+                                encrypted_pass = (cipherTextIvMac.toString());
+                            } catch (Exception exe) {
+                                //TODO:Handle this at least in console
+                            }
                         }
 
 
@@ -129,21 +133,8 @@ public class RoomSelect extends AppCompatActivity {
         roomNames.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
-                Set<Room> set = new HashSet<>();
-                Iterator i = dataSnapshot.getChildren().iterator();
-                while (i.hasNext()){
-                    DataSnapshot roomSnapshot = (DataSnapshot)i.next();
-                    set.add(new Room(
-                            roomSnapshot.child("room_name").getValue().toString(),
-                            roomSnapshot.getKey().toString(),
-                            roomSnapshot.child("room_hash").getValue().toString()));
-                              }
-
-                list_of_rooms.clear();
-                list_of_rooms.addAll(set);
-
-                arrayAdapter.notifyDataSetChanged();
+                dataSnapshot_downloaded = dataSnapshot;
+                refreshRooms(dataSnapshot_downloaded);
             }
 
             @Override
@@ -151,7 +142,6 @@ public class RoomSelect extends AppCompatActivity {
 
             }
         });
-
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -169,55 +159,14 @@ public class RoomSelect extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Enter the password for the room:");
 
-        final EditText input_field = new EditText(this);
-        input_field.setInputType(InputType.TYPE_CLASS_TEXT |
+        password_join_editText = new EditText(this);
+        password_join_editText.setInputType(InputType.TYPE_CLASS_TEXT |
                 InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        builder.setView(input_field);
+        builder.setView(password_join_editText);
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-
-                root.addValueEventListener(new ValueEventListener() {
-
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Iterable<DataSnapshot> i = dataSnapshot.child("message").child(room.getName()).getChildren();
-                        room_pass = input_field.getText().toString();
-
-                        try {
-                            AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "S4ltyS4ltRand0mWriT1ngoNtheWall".getBytes());
-                            AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = new AesCbcWithIntegrity.CipherTextIvMac(room.getHash());
-                            AesCbcWithIntegrity.decryptString(cipherTextIvMac, keys);
-
-                            Intent intent = new Intent(getApplicationContext(),PlayScreen.class);
-                            intent.putExtra("room_name",room.getName() );
-                            intent.putExtra("user_name",name);
-                            intent.putExtra("room_pass",room_pass);
-                            intent.putExtra("user_key",current_user_key);
-                            startActivity(intent);
-                        } catch (Exception exe) {
-                            //TODO:Crear Dialogo de error
-                            AlertDialog.Builder builder = new AlertDialog.Builder(RoomSelect.this);
-                            LinearLayout layout = new LinearLayout(RoomSelect.this);
-                            layout.setOrientation(LinearLayout.VERTICAL);
-                            builder.setTitle("Wrong password");
-                            builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    dialogInterface.cancel();
-                                }
-                            });
-                            builder.show();
-                        }
-
-                    }
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
-
-
+                joinRoom(room);
             }
         });
 
@@ -230,4 +179,61 @@ public class RoomSelect extends AppCompatActivity {
 
         builder.show();
     }
+
+    private void joinRoom (Room room){
+        room_pass = password_join_editText.getText().toString();
+
+        if(!room.getHash().equals("")) {
+            try {
+
+                AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "S4ltyS4ltRand0mWriT1ngoNtheWall".getBytes());
+                AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = new AesCbcWithIntegrity.CipherTextIvMac(room.getHash());
+                AesCbcWithIntegrity.decryptString(cipherTextIvMac, keys);
+
+                Intent intent = new Intent(getApplicationContext(), PlayScreen.class);
+                intent.putExtra("room_name", room.getName());
+                intent.putExtra("user_name", name);
+                intent.putExtra("room_pass", room_pass);
+                intent.putExtra("user_key", current_user_key);
+                startActivity(intent);
+            } catch (Exception exe) {
+                //TODO:Crear Dialogo de error
+                AlertDialog.Builder builder = new AlertDialog.Builder(RoomSelect.this);
+                LinearLayout layout = new LinearLayout(RoomSelect.this);
+                layout.setOrientation(LinearLayout.VERTICAL);
+                builder.setTitle("Wrong password");
+                builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.cancel();
+                    }
+                });
+                builder.show();
+            }
+        }else{
+            Intent intent = new Intent(getApplicationContext(), PlayScreen.class);
+            intent.putExtra("room_name", room.getName());
+            intent.putExtra("user_name", name);
+            intent.putExtra("room_pass", room_pass);
+            intent.putExtra("user_key", current_user_key);
+        }
+    }
+
+    public void refreshRooms(DataSnapshot dataSnapshot){
+        Set<Room> set = new HashSet<>();
+        Iterator i = dataSnapshot.getChildren().iterator();
+        while (i.hasNext()){
+            DataSnapshot roomSnapshot = (DataSnapshot)i.next();
+            set.add(new Room(
+                    roomSnapshot.child("room_name").getValue().toString(),
+                    roomSnapshot.getKey().toString(),
+                    roomSnapshot.child("room_hash").getValue().toString()));
+        }
+
+        list_of_rooms.clear();
+        list_of_rooms.addAll(set);
+
+        arrayAdapter.notifyDataSetChanged();
+    }
+
 }
