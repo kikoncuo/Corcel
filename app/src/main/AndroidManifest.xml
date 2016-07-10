@@ -11,7 +11,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".Views.PlayScreen" />
-        <activity android:name=".Views.RoomSelect" android:windowSoftInputMode="stateHidden" />
+        <activity android:name=".Views.RoomSelect" android:windowSoftInputMode="stateHidden" >
+            <meta-data android:name="android.app.searchable"
+            android:resource="@xml/serchable" />
+        </activity>
         <activity android:name=".Views.EditProfile" />
         <activity android:name=".Views.MainMenu">
             <intent-filter>

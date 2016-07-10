@@ -1,15 +1,22 @@
 package urba.com.corcel.Views;
 
+import android.app.SearchManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -41,7 +48,8 @@ public class RoomSelect extends AppCompatActivity {
 
     private FloatingActionButton add_room;
     private EditText room_name;
-    private EditText input_search;
+
+    private SearchView input_search;
     EditText password_join_editText;
 
     private ListView listView;
@@ -59,9 +67,11 @@ public class RoomSelect extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_room_select);
+        // Adding Toolbar to Main screen
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         add_room = (FloatingActionButton) findViewById(R.id.btn_add_room);
         listView = (ListView) findViewById(R.id.listView);
-        input_search = (EditText)  findViewById(R.id.input_search);
         arrayAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,list_of_rooms);
 
         listView.setAdapter(arrayAdapter);
@@ -153,30 +163,6 @@ public class RoomSelect extends AppCompatActivity {
                Room room = (Room) adapterView.getItemAtPosition(i);
 
                 request_password_room(room);
-            }
-        });
-
-
-
-
-        input_search.addTextChangedListener(new TextWatcher() {
-
-            @Override
-            public void onTextChanged(CharSequence cs, int arg1, int arg2, int arg3) {
-                // When user changed the Text
-                RoomSelect.this.arrayAdapter.getFilter().filter(cs);
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence arg0, int arg1, int arg2,
-                                          int arg3) {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable arg0) {
-                // TODO Auto-generated method stub
             }
         });
     }
@@ -271,5 +257,27 @@ public class RoomSelect extends AppCompatActivity {
         intent.putExtra("room_pass", room_pass);
         intent.putExtra("user_key", user_key);
         startActivity(intent);
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.room_select_menu, menu);
+
+        MenuItem myActionMenuItem = menu.findItem( R.id.action_search);
+        input_search = (SearchView) myActionMenuItem.getActionView();
+        input_search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                RoomSelect.this.arrayAdapter.getFilter().filter(newText);
+                return true;
+            }
+        });
+
+        return true;
     }
 }
