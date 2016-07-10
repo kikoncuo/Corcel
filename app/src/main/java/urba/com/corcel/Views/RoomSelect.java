@@ -7,7 +7,9 @@ import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -40,6 +42,7 @@ public class RoomSelect extends AppCompatActivity {
 
     private FloatingActionButton add_room;
     private EditText room_name;
+    private EditText input_search;
     EditText password_join_editText;
 
     private ListView listView;
@@ -59,7 +62,7 @@ public class RoomSelect extends AppCompatActivity {
         setContentView(R.layout.activity_room_select);
         add_room = (FloatingActionButton) findViewById(R.id.btn_add_room);
         listView = (ListView) findViewById(R.id.listView);
-
+        input_search = (EditText)  findViewById(R.id.input_search);
         arrayAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,list_of_rooms);
 
         listView.setAdapter(arrayAdapter);
@@ -152,6 +155,29 @@ public class RoomSelect extends AppCompatActivity {
             }
         });
 
+
+
+
+        input_search.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void onTextChanged(CharSequence cs, int arg1, int arg2, int arg3) {
+                // When user changed the Text
+                RoomSelect.this.arrayAdapter.getFilter().filter(cs);
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence arg0, int arg1, int arg2,
+                                          int arg3) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable arg0) {
+                // TODO Auto-generated method stub
+            }
+        });
     }
 
 

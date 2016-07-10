@@ -18,7 +18,11 @@ android {
         }
     }
 }
-
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
@@ -33,5 +37,8 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:23.2.0'
     compile 'com.android.support:design:23.2.0'
     compile "com.android.support:support-v4:23.2.0"
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile(name:'material-search', ext:'aar')
+
 }
 apply plugin: 'com.google.gms.google-services'

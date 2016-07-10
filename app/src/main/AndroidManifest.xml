@@ -11,7 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".Views.PlayScreen" />
-        <activity android:name=".Views.RoomSelect" />
+        <activity android:name=".Views.RoomSelect" android:windowSoftInputMode="stateHidden" />
         <activity android:name=".Views.EditProfile" />
         <activity android:name=".Views.MainMenu">
             <intent-filter>
@@ -20,7 +20,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Views.ChatActivity"></activity>
     </application>
 
 </manifest>
