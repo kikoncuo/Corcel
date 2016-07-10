@@ -36,6 +36,7 @@ public class PlayScreen extends AppCompatActivity {
     private ArrayList<ChatMessage> chatHistory;
 
     private String user_name,room_name,room_pass, current_user_key;
+    private boolean room_no_pass;
     private DatabaseReference root =  FirebaseDatabase.getInstance().getReference();
     DatabaseReference room_root;
     private String temp_key;
@@ -55,6 +56,7 @@ public class PlayScreen extends AppCompatActivity {
         room_name = getIntent().getExtras().get("room_name").toString();
         room_pass = getIntent().getExtras().get("room_pass").toString();
         current_user_key = getIntent().getExtras().get("user_key").toString();
+        room_no_pass = (boolean)getIntent().getExtras().get("room_no_pass");
         adapter = new ChatAdapter(PlayScreen.this, new ArrayList<ChatMessage>(), current_user_key);
         messagesContainer.setAdapter(adapter);
         setTitle(" Room - "+room_name);
@@ -76,12 +78,16 @@ public class PlayScreen extends AppCompatActivity {
                     //Encrypt the txt
                     String encrypted_txt = "";
                     //TODO: make this async
-                    try {
-                        AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "S4ltyS4ltRand0mWriT1ngoNtheWall".getBytes());
-                        AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = AesCbcWithIntegrity.encrypt(messageET.getText().toString(), keys);
-                        encrypted_txt = (cipherTextIvMac.toString());
-                    } catch (Exception exe) {
-                        //TODO:Handle this at least in console
+                    if (!room_no_pass){
+                        try {
+                            AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "shortsalt".getBytes());
+                            AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = AesCbcWithIntegrity.encrypt(messageET.getText().toString(), keys);
+                            encrypted_txt = (cipherTextIvMac.toString());
+                        } catch (Exception exe) {
+                            //TODO:Handle this at least in console
+                        }
+                    }else{
+                        encrypted_txt = messageET.getText().toString();
                     }
                     //Save encrypted text
                     map2.put("text", encrypted_txt);
@@ -142,13 +148,13 @@ public class PlayScreen extends AppCompatActivity {
         chat_msg = dataSnapshot.child("text").getValue().toString();
         //Try to decipher
         try {
-            AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "S4ltyS4ltRand0mWriT1ngoNtheWall".getBytes());
+            AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "shortsalt".getBytes());
             AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = new AesCbcWithIntegrity.CipherTextIvMac(chat_msg);
             clear_msg = AesCbcWithIntegrity.decryptString(cipherTextIvMac, keys);
         } catch (Exception exe) {
+            clear_msg = chat_msg;
         }
         chat_user_key = dataSnapshot.child("user_key").getValue().toString();
-        //chat_conversation.append(chat_user_name + " : " + clear_msg + " \n");
         if(clear_msg != null){
             ChatMessage chatMessage = new ChatMessage();
             chatMessage.setId(dataSnapshot.getKey());

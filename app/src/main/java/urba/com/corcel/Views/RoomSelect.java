@@ -11,14 +11,10 @@ import android.text.InputType;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TextView;
 
-import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -97,7 +93,7 @@ public class RoomSelect extends AppCompatActivity {
                         String encrypted_pass="";
                         if (!room_password.getText().toString().equals("")) {
                             try {
-                                AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "S4ltyS4ltRand0mWriT1ngoNtheWall".getBytes());
+                                AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "shortsalt".getBytes());
                                 AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = AesCbcWithIntegrity.encrypt(room_password.getText().toString(), keys);
                                 encrypted_pass = (cipherTextIvMac.toString());
                             } catch (Exception exe) {
@@ -110,13 +106,8 @@ public class RoomSelect extends AppCompatActivity {
                         temp_key = roomNames.push().getKey();
                         roomNames.child("Room"+temp_key).updateChildren(map);
 
-                        Intent intent = new Intent(getApplicationContext(),PlayScreen.class);
-                        intent.putExtra("room_name",room_name.getText().toString() );
-                        intent.putExtra("user_name",name);
-                        intent.putExtra("room_pass",room_pass);
-                        intent.putExtra("user_key",current_user_key);
-                        room_name.setText("");
-                        startActivity(intent);
+                        startChatRoomActivity(room_name.getText().toString(), room_pass, room_pass.equals(""), name, current_user_key);
+
                     }
                 });
 
@@ -156,46 +147,51 @@ public class RoomSelect extends AppCompatActivity {
 
 
     private void request_password_room(final Room room) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Enter the password for the room:");
+        if (!room.isNoPass()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Enter the password for the room:");
 
-        password_join_editText = new EditText(this);
-        password_join_editText.setInputType(InputType.TYPE_CLASS_TEXT |
-                InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        builder.setView(password_join_editText);
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                joinRoom(room);
-            }
-        });
+                password_join_editText = new EditText(this);
+                password_join_editText.setInputType(InputType.TYPE_CLASS_TEXT |
+                        InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.cancel();
-            }
-        });
+            builder.setView(password_join_editText);
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    joinRoom(room);
+                }
+            });
 
-        builder.show();
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.cancel();
+                }
+            });
+
+            builder.show();
+        }else{
+            joinRoom(room);
+        }
     }
 
     private void joinRoom (Room room){
-        room_pass = password_join_editText.getText().toString();
 
-        if(!room.getHash().equals("")) {
+
+        if(room.isNoPass()) {
+            room_pass = "";
+            startChatRoomActivity(room.getName(), room_pass, room.isNoPass(), name, current_user_key);
+
+        }else{
+            room_pass = password_join_editText.getText().toString();
             try {
-
-                AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "S4ltyS4ltRand0mWriT1ngoNtheWall".getBytes());
+                AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "shortsalt".getBytes());
                 AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = new AesCbcWithIntegrity.CipherTextIvMac(room.getHash());
                 AesCbcWithIntegrity.decryptString(cipherTextIvMac, keys);
 
-                Intent intent = new Intent(getApplicationContext(), PlayScreen.class);
-                intent.putExtra("room_name", room.getName());
-                intent.putExtra("user_name", name);
-                intent.putExtra("room_pass", room_pass);
-                intent.putExtra("user_key", current_user_key);
-                startActivity(intent);
+                startChatRoomActivity(room.getName(), room_pass, room.isNoPass(), name, current_user_key);
+
             } catch (Exception exe) {
                 //TODO:Crear Dialogo de error
                 AlertDialog.Builder builder = new AlertDialog.Builder(RoomSelect.this);
@@ -210,12 +206,6 @@ public class RoomSelect extends AppCompatActivity {
                 });
                 builder.show();
             }
-        }else{
-            Intent intent = new Intent(getApplicationContext(), PlayScreen.class);
-            intent.putExtra("room_name", room.getName());
-            intent.putExtra("user_name", name);
-            intent.putExtra("room_pass", room_pass);
-            intent.putExtra("user_key", current_user_key);
         }
     }
 
@@ -224,10 +214,11 @@ public class RoomSelect extends AppCompatActivity {
         Iterator i = dataSnapshot.getChildren().iterator();
         while (i.hasNext()){
             DataSnapshot roomSnapshot = (DataSnapshot)i.next();
-            set.add(new Room(
-                    roomSnapshot.child("room_name").getValue().toString(),
-                    roomSnapshot.getKey().toString(),
-                    roomSnapshot.child("room_hash").getValue().toString()));
+            String room_name = roomSnapshot.child("room_name").getValue().toString();
+            String room_id = roomSnapshot.getKey().toString();
+            String room_hash = roomSnapshot.child("room_hash").getValue().toString();
+            boolean room_no_pass = room_hash.equals("");
+            set.add(new Room(room_name, room_id, room_hash, room_no_pass));
         }
 
         list_of_rooms.clear();
@@ -236,4 +227,13 @@ public class RoomSelect extends AppCompatActivity {
         arrayAdapter.notifyDataSetChanged();
     }
 
+    private void startChatRoomActivity(String room_name, String room_pass, boolean no_pass, String user_name, String user_key){
+        Intent intent = new Intent(getApplicationContext(), PlayScreen.class);
+        intent.putExtra("room_no_pass", no_pass);
+        intent.putExtra("room_name", room_name);
+        intent.putExtra("user_name", user_name);
+        intent.putExtra("room_pass", room_pass);
+        intent.putExtra("user_key", user_key);
+        startActivity(intent);
+    }
 }
