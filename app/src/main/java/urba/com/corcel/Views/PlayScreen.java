@@ -40,6 +40,7 @@ public class PlayScreen extends AppCompatActivity {
     private DatabaseReference root =  FirebaseDatabase.getInstance().getReference();
     DatabaseReference room_root;
     private String temp_key;
+    AesCbcWithIntegrity.SecretKeys keys;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -64,6 +65,13 @@ public class PlayScreen extends AppCompatActivity {
         root = FirebaseDatabase.getInstance().getReference().child("message");
         room_root = root.child(room_name);
 
+        //TODO: make this an async task
+        try {
+            keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "shortsalt".getBytes());
+        } catch (Exception exe) {
+
+        }
+
         sendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -80,7 +88,6 @@ public class PlayScreen extends AppCompatActivity {
                     //TODO: make this async
                     if (!room_no_pass){
                         try {
-                            AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "shortsalt".getBytes());
                             AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = AesCbcWithIntegrity.encrypt(messageET.getText().toString(), keys);
                             encrypted_txt = (cipherTextIvMac.toString());
                         } catch (Exception exe) {
@@ -148,7 +155,6 @@ public class PlayScreen extends AppCompatActivity {
         chat_msg = dataSnapshot.child("text").getValue().toString();
         //Try to decipher
         try {
-            AesCbcWithIntegrity.SecretKeys keys = AesCbcWithIntegrity.generateKeyFromPassword(room_pass, "shortsalt".getBytes());
             AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = new AesCbcWithIntegrity.CipherTextIvMac(chat_msg);
             clear_msg = AesCbcWithIntegrity.decryptString(cipherTextIvMac, keys);
         } catch (Exception exe) {
