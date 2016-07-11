@@ -17,6 +17,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import net.rehacktive.waspdb.WaspDb;
+import net.rehacktive.waspdb.WaspFactory;
+import net.rehacktive.waspdb.WaspHash;
+
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,6 +45,7 @@ public class PlayScreen extends AppCompatActivity {
     DatabaseReference room_root;
     private String temp_key;
     AesCbcWithIntegrity.SecretKeys keys;
+    private WaspHash messages_local;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,6 +55,13 @@ public class PlayScreen extends AppCompatActivity {
         messagesContainer = (ListView) findViewById(R.id.messagesContainer);
         messageET = (EditText) findViewById(R.id.messageEdit);
         sendBtn = (Button) findViewById(R.id.chatSendButton);
+
+        //Initialize local db
+        String path = getFilesDir().getPath();
+        String databaseName = "myDb";
+        String password = "passw0rdsdfgbshgv";
+        WaspDb db = WaspFactory.openOrCreateDatabase(path,databaseName,password);
+        messages_local = db.openOrCreateHash("messages");
 
 
         RelativeLayout container = (RelativeLayout) findViewById(R.id.container);
@@ -163,15 +175,16 @@ public class PlayScreen extends AppCompatActivity {
         chat_user_key = dataSnapshot.child("user_key").getValue().toString();
         if(clear_msg != null){
             ChatMessage chatMessage = new ChatMessage();
-            chatMessage.setId(dataSnapshot.getKey());
+            String messageKey = dataSnapshot.getKey();
+            chatMessage.setId(messageKey);
             chatMessage.setMessage(clear_msg);
             chatMessage.setDate(dataSnapshot.child("msg_time").getValue().toString());
             chatMessage.setUserId(dataSnapshot.child("user_key").getValue().toString());
             chatMessage.setUser(dataSnapshot.child("user_name").getValue().toString());
             chatMessage.setMe(chat_user_key.equals(current_user_key));
             displayMessage(chatMessage);
+            messages_local.put(messageKey, chatMessage);
         }
-
     }
     public void displayMessage(ChatMessage message) {
         adapter.add(message);

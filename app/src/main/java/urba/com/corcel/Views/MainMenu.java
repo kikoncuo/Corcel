@@ -66,6 +66,7 @@ public class MainMenu  extends AppCompatActivity {
         //UNCOMMENT THIS LINE TO RESET WASPDB
         //db.removeHash("user");
         //db.removeHash("friends");
+        //db.removeHash("messages");
 
         // now create an WaspHash, it's like a sql table
         user = db.openOrCreateHash("user");
