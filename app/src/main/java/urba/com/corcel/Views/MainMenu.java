@@ -94,7 +94,6 @@ public class MainMenu  extends AppCompatActivity {
         });
     }
 
-
     private void request_user_name() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Enter name:");

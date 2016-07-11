@@ -68,9 +68,8 @@ public class ChatAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        //TODO: change method getIsme and do my own check
+
         boolean myMsg = chatMessage.getIsme() ;//Just a dummy check
-        //to simulate whether it me or other sender
 
         //TODO: Preguntar por las keys en vez de los nombres
         setAlignment(holder, myMsg);
@@ -150,11 +149,6 @@ public class ChatAdapter extends BaseAdapter {
         public TextView txtInfo;
         public LinearLayout content;
         public LinearLayout contentWithBG;
-    }
-
-    private boolean isMe(){
-
-        return true;
     }
 
 }

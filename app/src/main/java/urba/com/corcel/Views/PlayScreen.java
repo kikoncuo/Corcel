@@ -103,6 +103,8 @@ public class PlayScreen extends AppCompatActivity {
 
                     map2.put("user_name", user_name);
 
+                    map2.put("msg_time", DateFormat.getDateTimeInstance().format(new Date()));
+
                     message_root.updateChildren(map2);
 
 
@@ -149,8 +151,6 @@ public class PlayScreen extends AppCompatActivity {
 
     private void append_chat_conversation(DataSnapshot dataSnapshot) {
 
-        //TODO: make this async this is the biggest bottleneck in performance as now
-        String test = dataSnapshot.getKey();
         chat_room = dataSnapshot.child("room_name").getValue().toString();
         chat_msg = dataSnapshot.child("text").getValue().toString();
         //Try to decipher
@@ -165,7 +165,7 @@ public class PlayScreen extends AppCompatActivity {
             ChatMessage chatMessage = new ChatMessage();
             chatMessage.setId(dataSnapshot.getKey());
             chatMessage.setMessage(clear_msg);
-            chatMessage.setDate(DateFormat.getDateTimeInstance().format(new Date()));
+            chatMessage.setDate(dataSnapshot.child("msg_time").getValue().toString());
             chatMessage.setUserId(dataSnapshot.child("user_key").getValue().toString());
             chatMessage.setUser(dataSnapshot.child("user_name").getValue().toString());
             chatMessage.setMe(chat_user_key.equals(current_user_key));
