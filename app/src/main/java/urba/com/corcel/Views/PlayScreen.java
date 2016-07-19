@@ -22,9 +22,12 @@ import net.rehacktive.waspdb.WaspFactory;
 import net.rehacktive.waspdb.WaspHash;
 
 import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import urba.com.corcel.Libraries.AesCbcWithIntegrity;
@@ -38,8 +41,12 @@ public class PlayScreen extends AppCompatActivity {
     private Button sendBtn;
     private ChatAdapter adapter;
     private ArrayList<ChatMessage> chatHistory;
+    List<String> list_local_messages_keys;
 
-    private String user_name,room_name,room_pass, current_user_key;
+    Date data_newest_local = new Date(12);
+    SimpleDateFormat formatter = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss aa");
+
+    private String user_name,room_name,room_pass, current_user_key, room_key;
     private boolean room_no_pass;
     private DatabaseReference root =  FirebaseDatabase.getInstance().getReference();
     DatabaseReference room_root;
@@ -56,23 +63,45 @@ public class PlayScreen extends AppCompatActivity {
         messageET = (EditText) findViewById(R.id.messageEdit);
         sendBtn = (Button) findViewById(R.id.chatSendButton);
 
-        //Initialize local db
-        String path = getFilesDir().getPath();
-        String databaseName = "myDb";
-        String password = "passw0rdsdfgbshgv";
-        WaspDb db = WaspFactory.openOrCreateDatabase(path,databaseName,password);
-        messages_local = db.openOrCreateHash("messages");
-
-
-        RelativeLayout container = (RelativeLayout) findViewById(R.id.container);
         user_name = getIntent().getExtras().get("user_name").toString();
         room_name = getIntent().getExtras().get("room_name").toString();
         room_pass = getIntent().getExtras().get("room_pass").toString();
         current_user_key = getIntent().getExtras().get("user_key").toString();
+        room_key = getIntent().getExtras().get("room_key").toString();
         room_no_pass = (boolean)getIntent().getExtras().get("room_no_pass");
         adapter = new ChatAdapter(PlayScreen.this, new ArrayList<ChatMessage>(), current_user_key);
         messagesContainer.setAdapter(adapter);
+
+        //Initialize local db
+        //TODO: create diferent branch in local db for each room
+        String path = getFilesDir().getPath();
+        String databaseName = "messages";
+        String password = "passw0rdsdfgbshgvv";
+        WaspDb db = WaspFactory.openOrCreateDatabase(path,databaseName,password);
+        messages_local = db.openOrCreateHash(room_key);
+
+        list_local_messages_keys = messages_local.getAllKeys();
+        List<ChatMessage> list_local_messages = messages_local.getAllValues();
+
+
+        for (ChatMessage message : list_local_messages)
+        {
+            try{
+                Date date_local = formatter.parse(message.getDate());
+                displayMessage(message);
+                if (data_newest_local.compareTo(date_local)<0)
+                {
+                    data_newest_local=date_local;
+                }
+            }catch (ParseException e1){
+                e1.printStackTrace();
+            }
+
+        }
+
         setTitle(" Room - "+room_name);
+
+
 
         root = FirebaseDatabase.getInstance().getReference().child("message");
         room_root = root.child(room_name);
@@ -162,35 +191,48 @@ public class PlayScreen extends AppCompatActivity {
     private String chat_msg,chat_user_key,chat_room,clear_msg;
 
     private void append_chat_conversation(DataSnapshot dataSnapshot) {
+        String message_time = dataSnapshot.child("msg_time").getValue().toString();
+        String messageKey = dataSnapshot.getKey();
+        try{
+            Date date_firebase = formatter.parse(message_time);
+            //TODO: Optimize this so it only does the check once
+            if (data_newest_local.compareTo(date_firebase)<0)
+            {
+                chat_room = dataSnapshot.child("room_name").getValue().toString();
+                chat_msg = dataSnapshot.child("text").getValue().toString();
+                //Try to decipher
+                try {
+                    AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = new AesCbcWithIntegrity.CipherTextIvMac(chat_msg);
+                    clear_msg = AesCbcWithIntegrity.decryptString(cipherTextIvMac, keys);
+                } catch (Exception exe) {
+                    clear_msg = chat_msg;
+                }
+                chat_user_key = dataSnapshot.child("user_key").getValue().toString();
+                if (clear_msg != null) {
+                    ChatMessage chatMessage = new ChatMessage();
+                    chatMessage.setId(messageKey);
+                    chatMessage.setMessage(clear_msg);
+                    chatMessage.setDate(dataSnapshot.child("msg_time").getValue().toString());
+                    chatMessage.setUserId(dataSnapshot.child("user_key").getValue().toString());
+                    chatMessage.setUser(dataSnapshot.child("user_name").getValue().toString());
+                    chatMessage.setMe(chat_user_key.equals(current_user_key));
+                    displayMessage(chatMessage);
+                    messages_local.put(messageKey, chatMessage);
+                }
+            }
+        }catch (ParseException e1){
+            e1.printStackTrace();
+        }
 
-        chat_room = dataSnapshot.child("room_name").getValue().toString();
-        chat_msg = dataSnapshot.child("text").getValue().toString();
-        //Try to decipher
-        try {
-            AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = new AesCbcWithIntegrity.CipherTextIvMac(chat_msg);
-            clear_msg = AesCbcWithIntegrity.decryptString(cipherTextIvMac, keys);
-        } catch (Exception exe) {
-            clear_msg = chat_msg;
-        }
-        chat_user_key = dataSnapshot.child("user_key").getValue().toString();
-        if(clear_msg != null){
-            ChatMessage chatMessage = new ChatMessage();
-            String messageKey = dataSnapshot.getKey();
-            chatMessage.setId(messageKey);
-            chatMessage.setMessage(clear_msg);
-            chatMessage.setDate(dataSnapshot.child("msg_time").getValue().toString());
-            chatMessage.setUserId(dataSnapshot.child("user_key").getValue().toString());
-            chatMessage.setUser(dataSnapshot.child("user_name").getValue().toString());
-            chatMessage.setMe(chat_user_key.equals(current_user_key));
-            displayMessage(chatMessage);
-            messages_local.put(messageKey, chatMessage);
-        }
+
+
     }
     public void displayMessage(ChatMessage message) {
         adapter.add(message);
         adapter.notifyDataSetChanged();
         scroll();
     }
+
     private void scroll() {
         messagesContainer.setSelection(messagesContainer.getCount() - 1);
     }

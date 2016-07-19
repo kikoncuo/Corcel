@@ -129,7 +129,7 @@ public class RoomSelect extends AppCompatActivity {
                         temp_key = roomNames.push().getKey();
                         roomNames.child("Room"+temp_key).updateChildren(map);
 
-                        startChatRoomActivity(room_name.getText().toString(), room_pass, room_pass.equals(""), name, current_user_key);
+                        startChatRoomActivity(room_name.getText().toString(), room_pass, room_pass.equals(""), name, current_user_key, "Room"+temp_key);
 
                     }
                 });
@@ -203,7 +203,7 @@ public class RoomSelect extends AppCompatActivity {
 
         if(room.isNoPass()) {
             room_pass = "";
-            startChatRoomActivity(room.getName(), room_pass, room.isNoPass(), name, current_user_key);
+            startChatRoomActivity(room.getName(), room_pass, room.isNoPass(), name, current_user_key, room.getId());
 
         }else{
             room_pass = password_join_editText.getText().toString();
@@ -212,7 +212,7 @@ public class RoomSelect extends AppCompatActivity {
                 AesCbcWithIntegrity.CipherTextIvMac cipherTextIvMac = new AesCbcWithIntegrity.CipherTextIvMac(room.getHash());
                 AesCbcWithIntegrity.decryptString(cipherTextIvMac, keys);
 
-                startChatRoomActivity(room.getName(), room_pass, room.isNoPass(), name, current_user_key);
+                startChatRoomActivity(room.getName(), room_pass, room.isNoPass(), name, current_user_key, room.getId());
 
             } catch (Exception exe) {
                 //TODO:Crear Dialogo de error
@@ -249,13 +249,14 @@ public class RoomSelect extends AppCompatActivity {
         arrayAdapter.notifyDataSetChanged();
     }
 
-    private void startChatRoomActivity(String room_name, String room_pass, boolean no_pass, String user_name, String user_key){
+    private void startChatRoomActivity(String room_name, String room_pass, boolean no_pass, String user_name, String user_key, String room_id){
         Intent intent = new Intent(getApplicationContext(), PlayScreen.class);
         intent.putExtra("room_no_pass", no_pass);
         intent.putExtra("room_name", room_name);
         intent.putExtra("user_name", user_name);
         intent.putExtra("room_pass", room_pass);
         intent.putExtra("user_key", user_key);
+        intent.putExtra("room_key", room_id);
         startActivity(intent);
     }
     @Override
