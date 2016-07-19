@@ -1,8 +1,13 @@
 package urba.com.corcel.Views;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.NotificationCompat;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
@@ -64,6 +69,7 @@ public class PlayScreen extends AppCompatActivity {
         messages_local = db.openOrCreateHash("messages");
 
 
+
         RelativeLayout container = (RelativeLayout) findViewById(R.id.container);
         user_name = getIntent().getExtras().get("user_name").toString();
         room_name = getIntent().getExtras().get("room_name").toString();
@@ -119,6 +125,8 @@ public class PlayScreen extends AppCompatActivity {
 
                     message_root.updateChildren(map2);
 
+                    //Initialize Notification
+                    notifications(room_name,user_name+": "+messageET.getText().toString());
 
                     messageET.setText("");
                 }
@@ -157,6 +165,27 @@ public class PlayScreen extends AppCompatActivity {
 
     }
 
+    private void notifications(String roomName, String message) {
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this);
+
+        mBuilder.setSmallIcon(R.mipmap.ic_launcher);
+        mBuilder.setContentTitle("Message from: "+roomName);
+        mBuilder.setContentText(message);
+
+        Intent resultIntent = new Intent(this, MainMenu.class);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addParentStack(MainMenu.class);
+
+        // Adds the Intent that starts the Activity to the top of the stack
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent((int) System.currentTimeMillis(),PendingIntent.FLAG_UPDATE_CURRENT);
+        mBuilder.setContentIntent(resultPendingIntent);
+
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(this.NOTIFICATION_SERVICE);
+
+        // notificationID allows you to update the notification later on.
+        mNotificationManager.notify(2, mBuilder.build());
+    }
 
 
     private String chat_msg,chat_user_key,chat_room,clear_msg;
@@ -184,6 +213,8 @@ public class PlayScreen extends AppCompatActivity {
             chatMessage.setMe(chat_user_key.equals(current_user_key));
             displayMessage(chatMessage);
             messages_local.put(messageKey, chatMessage);
+
+
         }
     }
     public void displayMessage(ChatMessage message) {
